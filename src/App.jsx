@@ -37,7 +37,9 @@ import FlipToBackIcon from '@mui/icons-material/FlipToBack';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 
 // Backend Base URL: Vite proxy directs /api to http://127.0.0.1:8000
-const API_BASE = 'http://127.0.0.1:8000';
+// const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE =
+  "https://sonali-bank-demo-nid-ocr-backend.onrender.com";
 
 export default function App() {
   const [mode, setMode] = useState('dual'); // 'dual' | 'single'

@@ -15,8 +15,12 @@ import DualSideUploadBox from './DualSideUploadBox';
 import HolderDataTable from './HolderDataTable';
 import { banglaToBanglish, toBlockLetters, formatAddress } from '../../utils/transliterate';
 
-const API_BASE = 'http://127.0.0.1:8000';
+// const API_BASE = 'http://127.0.0.1:8000';
 
+const API_BASE =
+  "https://sonali-bank-demo-nid-ocr-backend.onrender.com";
+
+  
 export default function PrimaryHolderStep({
   primaryHolderData,
   setPrimaryHolderData,

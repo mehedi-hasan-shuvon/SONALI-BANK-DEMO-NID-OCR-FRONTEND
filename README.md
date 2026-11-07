@@ -26,6 +26,10 @@ Modern, secure, and intuitive React frontend built with **Material UI (MUI v6)**
   - Full Raw Address string
 - **Machine Readable Zone (MRZ)**: TD1 3-line MRZ viewer with decoded document number, expiration date, issuing state, and checksum validation.
 - **One-Click Quick Demos**: Built-in buttons to test sample Smart NIDs and Old NIDs instantly without needing manual image uploads.
+- **Demo Account Creation Workflow (Stepper)**: Complete account opening workflow beside Dual-Side and Single-Side OCR:
+  - **Step 1: Primary Account Holder**: Dual-side NID upload with structured table extraction (Name in Bangla, Name in English Block Letters, Birth Date, Father Name in Bangla & Banglish transliteration, Mother Name in Bangla & Banglish transliteration, Gender, NID Address).
+  - **Step 2: Nominee Information**: Dual-side NID upload with support for **multiple nominees**, relationship mapping, share percentages, and matching extracted data table.
+  - **Step 3: Account Form Generation & Audit**: Generates unified account opening application form, logs data payload to browser console (`console.log` & `console.table`), and displays an official printable form preview with JSON export.
 - **Export & Audit**:
   - One-click copy for any specific field
   - Export full KYC dossier as JSON file

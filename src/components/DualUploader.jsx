@@ -21,6 +21,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import FlipToBackIcon from '@mui/icons-material/FlipToBack';
 import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 
 export default function DualUploader({
   onProcess,
@@ -125,28 +126,7 @@ export default function DualUploader({
   return (
     <Card sx={{ mb: 4, overflow: 'hidden' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2, pt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Tabs
-          value={mode}
-          onChange={(e, val) => setMode(val)}
-          textColor="primary"
-          indicatorColor="primary"
-          sx={{ minHeight: 48 }}
-        >
-          <Tab
-            value="dual"
-            label="Dual-Side OCR (Front & Back - Recommended)"
-            icon={<BadgeIcon />}
-            iconPosition="start"
-            sx={{ fontWeight: 600, fontSize: '0.9rem' }}
-          />
-          <Tab
-            value="single"
-            label="Single-Side OCR"
-            icon={<FlipToBackIcon />}
-            iconPosition="start"
-            sx={{ fontWeight: 600, fontSize: '0.9rem' }}
-          />
-        </Tabs>
+
 
         {(frontFile || backFile || singleFile) && (
           <Button
@@ -154,7 +134,8 @@ export default function DualUploader({
             color="inherit"
             startIcon={<RestartAltIcon />}
             onClick={handleFullReset}
-            sx={{ color: 'text.secondary', textTransform: 'none' }}
+            sx={{ color: 'text.secondary', textTransform: 'none', ml: 'auto'}}
+
           >
             Clear All
           </Button>

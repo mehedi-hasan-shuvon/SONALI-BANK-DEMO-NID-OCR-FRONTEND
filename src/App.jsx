@@ -13,6 +13,9 @@ import {
   Card,
   CardContent,
   Divider,
+  Paper,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import Header from './components/Header';
 import DualUploader from './components/DualUploader';
@@ -22,12 +25,16 @@ import AddressCard from './components/AddressCard';
 import MRZCard from './components/MRZCard';
 import RawTextDialog from './components/RawTextDialog';
 import InfoDialog from './components/InfoDialog';
+import DemoAccountCreation from './components/AccountCreation/DemoAccountCreation';
 
 import DownloadIcon from '@mui/icons-material/Download';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ArticleIcon from '@mui/icons-material/Article';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import BadgeIcon from '@mui/icons-material/Badge';
+import FlipToBackIcon from '@mui/icons-material/FlipToBack';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 
 // Backend Base URL: Vite proxy directs /api to http://127.0.0.1:8000
 const API_BASE = 'http://127.0.0.1:8000';
@@ -197,136 +204,179 @@ export default function App() {
       />
 
       <Container maxWidth="xl" sx={{ flexGrow: 1, pb: 6 }}>
-        {/* Quick Demo Selector */}
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            Select card images below or quickly test using sample bank records:
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            <Button
-              size="small"
-              variant="outlined"
-              color="primary"
-              startIcon={<PlayCircleOutlineIcon />}
-              onClick={() => loadDemoCard('smart')}
-            >
-              Load Demo Smart NID (Dual)
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              color="secondary"
-              startIcon={<PlayCircleOutlineIcon />}
-              onClick={() => loadDemoCard('old')}
-            >
-              Load Demo Old NID (Single)
-            </Button>
-          </Stack>
-        </Box>
-
-        {/* Upload Zone */}
-        <DualUploader
-          onProcess={handleProcessOCR}
-          loading={loading}
-          frontFile={frontFile}
-          setFrontFile={setFrontFile}
-          backFile={backFile}
-          setBackFile={setBackFile}
-          singleFile={singleFile}
-          setSingleFile={setSingleFile}
-          mode={mode}
-          setMode={setMode}
-          onReset={handleReset}
-        />
-
-        {/* Backend offline warning */}
-        {!isBackendOnline && (
-          <Alert severity="warning" sx={{ mb: 3 }}>
-            <AlertTitle sx={{ fontWeight: 600 }}>OCR Backend Service Not Reachable</AlertTitle>
-            Ensure your FastAPI service is running on <code>http://127.0.0.1:8000</code>. Run:
-            <br />
-            <code>./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000</code>
-          </Alert>
-        )}
-
-        {/* Error notification */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-            <AlertTitle sx={{ fontWeight: 600 }}>Extraction Failed</AlertTitle>
-            {error}
-          </Alert>
-        )}
-
-        {/* RESULTS SECTION */}
-        {ocrResult && (
-          <Box id="results-section" sx={{ mt: 4 }}>
-            {/* Header / Action Bar */}
-            <Box
+        {/* Main Application Mode Navigation */}
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 3,
+            border: '1px solid #e2e8f0',
+            borderRadius: 2,
+            bgcolor: '#ffffff',
+            overflow: 'hidden',
+          }}
+        >
+          <Tabs
+            value={mode}
+            onChange={(e, val) => setMode(val)}
+            textColor="primary"
+            indicatorColor="primary"
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              minHeight: 52,
+              '& .MuiTab-root': {
+                minHeight: 52,
+                fontWeight: 600,
+                fontSize: '0.92rem',
+                textTransform: 'none',
+                px: 3,
+              },
+            }}
+          >
+            <Tab
+              value="dual"
+              label="Dual-Side OCR (উভয় পাতা - Front & Back)"
+              icon={<BadgeIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              value="single"
+              label="Single-Side OCR (একক পাতা)"
+              icon={<FlipToBackIcon />}
+              iconPosition="start"
+            />
+            <Tab
+              value="account_creation"
+              label="Demo Account Creation (হিসাব খোলা ডেমো)"
+              icon={<PersonAddAlt1Icon />}
+              iconPosition="start"
               sx={{
-                mb: 3,
-                p: 2,
-                bgcolor: '#ffffff',
-                borderRadius: 2,
-                border: '1px solid #e2e8f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 2,
+                fontWeight: mode === 'account_creation' ? 700 : 600,
+                color: mode === 'account_creation' ? 'secondary.main' : 'inherit',
               }}
-            >
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                  Verification Results (যাচাইকৃত ফলাফল)
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Customer ID / NID: <strong>{ocrResult.nid_number || 'N/A'}</strong> — {ocrResult.name_en || ocrResult.name_bn || 'Identified Customer'}
-                </Typography>
-              </Box>
+            />
+          </Tabs>
+        </Paper>
 
-              <Stack direction="row" spacing={1.5} flexWrap="wrap">
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  size="small"
-                  startIcon={<ArticleIcon />}
-                  onClick={() => setRawTextOpen(true)}
-                >
-                  Raw OCR Logs
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  size="small"
-                  startIcon={<ContentCopyIcon />}
-                  onClick={handleCopyJSON}
-                >
-                  Copy JSON
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  startIcon={<DownloadIcon />}
-                  onClick={handleDownloadJSON}
-                >
-                  Export KYC (JSON)
-                </Button>
-              </Stack>
+        {mode === 'account_creation' ? (
+          /* Demo Account Creation Workflow */
+          <DemoAccountCreation />
+        ) : (
+          /* Standard OCR Inspection View */
+          <>
+            {/* Quick Demo Selector */}
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Select card images below or quickly test using sample bank records:
+              </Typography>
+
             </Box>
 
-            {/* Validation & Confidence summary */}
-            <ValidationAlert data={ocrResult} />
+            {/* Upload Zone */}
+            <DualUploader
+              onProcess={handleProcessOCR}
+              loading={loading}
+              frontFile={frontFile}
+              setFrontFile={setFrontFile}
+              backFile={backFile}
+              setBackFile={setBackFile}
+              singleFile={singleFile}
+              setSingleFile={setSingleFile}
+              mode={mode}
+              setMode={setMode}
+              onReset={handleReset}
+            />
 
-            {/* Main Extracted KYC Information Table */}
-            <KYCTable data={ocrResult} />
+            {/* Backend offline warning */}
+            {!isBackendOnline && (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                <AlertTitle sx={{ fontWeight: 600 }}>OCR Backend Service Not Reachable</AlertTitle>
+                Ensure your FastAPI service is running on <code>http://127.0.0.1:8000</code>. Run:
+                <br />
+                <code>./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000</code>
+              </Alert>
+            )}
 
-            {/* Address Breakdown Table (if address extracted) */}
-            {ocrResult.address && <AddressCard address={ocrResult.address} />}
+            {/* Error notification */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+                <AlertTitle sx={{ fontWeight: 600 }}>Extraction Failed</AlertTitle>
+                {error}
+              </Alert>
+            )}
 
-            {/* MRZ Zone Card (if MRZ present) */}
-            {ocrResult.mrz && <MRZCard mrz={ocrResult.mrz} />}
-          </Box>
+            {/* RESULTS SECTION */}
+            {ocrResult && (
+              <Box id="results-section" sx={{ mt: 4 }}>
+                {/* Header / Action Bar */}
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    bgcolor: '#ffffff',
+                    borderRadius: 2,
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: 2,
+                  }}
+                >
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                      Verification Results (যাচাইকৃত ফলাফল)
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Customer ID / NID: <strong>{ocrResult.nid_number || 'N/A'}</strong> — {ocrResult.name_en || ocrResult.name_bn || 'Identified Customer'}
+                    </Typography>
+                  </Box>
+
+                  <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      size="small"
+                      startIcon={<ArticleIcon />}
+                      onClick={() => setRawTextOpen(true)}
+                    >
+                      Raw OCR Logs
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      startIcon={<ContentCopyIcon />}
+                      onClick={handleCopyJSON}
+                    >
+                      Copy JSON
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      startIcon={<DownloadIcon />}
+                      onClick={handleDownloadJSON}
+                    >
+                      Export KYC (JSON)
+                    </Button>
+                  </Stack>
+                </Box>
+
+                {/* Validation & Confidence summary */}
+                <ValidationAlert data={ocrResult} />
+
+                {/* Main Extracted KYC Information Table */}
+                <KYCTable data={ocrResult} />
+
+                {/* Address Breakdown Table (if address extracted) */}
+                {ocrResult.address && <AddressCard address={ocrResult.address} />}
+
+                {/* MRZ Zone Card (if MRZ present) */}
+                {ocrResult.mrz && <MRZCard mrz={ocrResult.mrz} />}
+              </Box>
+            )}
+          </>
         )}
       </Container>
 

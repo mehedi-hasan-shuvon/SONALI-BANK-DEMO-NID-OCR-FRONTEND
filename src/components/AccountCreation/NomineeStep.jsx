@@ -6,7 +6,6 @@ import {
   CardContent,
   CardHeader,
   Button,
-  IconButton,
   Alert,
   Divider,
   Stack,
@@ -16,11 +15,13 @@ import {
   Chip,
   Tooltip,
 } from '@mui/material';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+
 import DualSideUploadBox from './DualSideUploadBox';
 import HolderDataTable from './HolderDataTable';
 import { banglaToBanglish, toBlockLetters, formatAddress } from '../../utils/transliterate';
@@ -47,49 +48,140 @@ export default function NomineeStep({
 }) {
   const [generalError, setGeneralError] = useState(null);
 
-  // Add new nominee item
-  const handleAddNominee = () => {
-    const nextIndex = nominees.length + 1;
-    // Distribute default share percentage evenly
-    const defaultShare = Math.floor(100 / nextIndex);
-    const updated = nominees.map((n) => ({
-      ...n,
-      share_percentage: defaultShare,
-    }));
-
-    setNominees([
-      ...updated,
-      {
-        id: Date.now(),
-        relationship: 'Spouse (স্ত্রী/স্বামী)',
-        share_percentage: defaultShare,
-        frontFile: null,
-        backFile: null,
-        data: null,
-        loading: false,
-        error: null,
-      },
-    ]);
-  };
-
-  // Remove a nominee
-  const handleRemoveNominee = (id) => {
-    if (nominees.length <= 1) return;
-    const remaining = nominees.filter((n) => n.id !== id);
-    const newShare = Math.floor(100 / remaining.length);
-    setNominees(
-      remaining.map((n) => ({
-        ...n,
-        share_percentage: newShare,
-      }))
-    );
-  };
+  // Calculate total share percentage currently allocated
+  const totalAllocatedShare = nominees.reduce(
+    (sum, n) => sum + (parseInt(n.share_percentage, 10) || 0),
+    0
+  );
 
   // Update a specific nominee property
   const updateNominee = (id, updates) => {
     setNominees((prev) =>
       prev.map((n) => (n.id === id ? { ...n, ...updates } : n))
     );
+  };
+
+  /**
+   * Automatic Share Percentage and Dynamic Nominee Generation:
+   * 1. If Nominee 1 is 100%, only Nominee 1 is displayed.
+   * 2. If Nominee 1's share is reduced below 100%, Nominee 2 is automatically generated
+   *    with the remaining percentage so total adds up to exactly 100%.
+   * 3. If Nominee 2's share is further reduced, Nominee 3 is automatically created with remainder.
+   * 4. If Nominee 1 is set back to 100%, extra nominees are automatically removed.
+   * 5. Fixes the leading 0 issue when typing numbers.
+   */
+  const handleShareChange = (index, rawValue) => {
+    setGeneralError(null);
+
+    // If user cleared the input (empty string), allow it so they can type cleanly without leading zeros
+    if (rawValue === '') {
+      setNominees((prev) => {
+        const next = [...prev];
+        next[index] = { ...next[index], share_percentage: '' };
+        return next;
+      });
+      return;
+    }
+
+    // Strip leading zeros e.g. "050" -> "50", "0" -> "0"
+    const sanitized = typeof rawValue === 'string' ? rawValue.replace(/^0+(?=\d)/, '') : String(rawValue);
+    const parsed = parseInt(sanitized, 10);
+    if (isNaN(parsed)) return;
+
+    setNominees((prev) => {
+      let updated = prev.map((n) => ({ ...n }));
+
+      // Calculate sum of shares before this nominee
+      let sumBefore = 0;
+      for (let i = 0; i < index; i++) {
+        sumBefore += (parseInt(updated[i].share_percentage, 10) || 0);
+      }
+
+      // Max allowed for this nominee
+      const maxAllowed = Math.max(0, 100 - sumBefore);
+      const validShare = Math.min(maxAllowed, Math.max(0, parsed));
+
+      updated[index] = {
+        ...updated[index],
+        share_percentage: validShare,
+        data: updated[index].data
+          ? { ...updated[index].data, share_percentage: validShare }
+          : null,
+      };
+
+      const currentTotal = sumBefore + validShare;
+
+      if (currentTotal === 100) {
+        // Reached 100%! Remove any subsequent nominees
+        updated = updated.slice(0, index + 1);
+      } else if (currentTotal < 100) {
+        const remaining = 100 - currentTotal;
+
+        if (updated.length > index + 1) {
+          // Update the next nominee's share with the remaining percentage
+          updated[index + 1] = {
+            ...updated[index + 1],
+            share_percentage: remaining,
+            data: updated[index + 1].data
+              ? { ...updated[index + 1].data, share_percentage: remaining }
+              : null,
+          };
+          // Keep only up to index + 1 so total is 100%
+          updated = updated.slice(0, index + 2);
+        } else {
+          // Automatically spawn the next nominee form with remaining percentage!
+          updated.push({
+            id: Date.now() + Math.random(),
+            relationship: index === 0 ? 'Son (ছেলে)' : 'Daughter (মেয়ে)',
+            share_percentage: remaining,
+            frontFile: null,
+            backFile: null,
+            data: null,
+            loading: false,
+            error: null,
+          });
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  // When field loses focus, if it was left empty, ensure it has a valid number
+  const handleShareBlur = (index) => {
+    if (nominees[index]?.share_percentage === '') {
+      handleShareChange(index, 0);
+    }
+  };
+
+  // Remove a nominee manually
+  const handleRemoveNominee = (id) => {
+    if (nominees.length <= 1) return;
+    setGeneralError(null);
+
+    setNominees((prev) => {
+      const targetIndex = prev.findIndex((n) => n.id === id);
+      if (targetIndex === -1) return prev;
+
+      const remainingList = prev.filter((n) => n.id !== id);
+
+      // Re-balance shares to equal exactly 100%
+      // Add the removed share to Nominee 1 or distribute
+      let sumOthers = 0;
+      for (let i = 1; i < remainingList.length; i++) {
+        sumOthers += (parseInt(remainingList[i].share_percentage, 10) || 0);
+      }
+      const newFirstShare = Math.max(1, 100 - sumOthers);
+      remainingList[0] = {
+        ...remainingList[0],
+        share_percentage: newFirstShare,
+        data: remainingList[0].data
+          ? { ...remainingList[0].data, share_percentage: newFirstShare }
+          : null,
+      };
+
+      return remainingList;
+    });
   };
 
   // Extract OCR data for a specific nominee
@@ -132,6 +224,8 @@ export default function NomineeStep({
         name_en: toBlockLetters(nameEn),
         date_of_birth: ocr.date_of_birth || '',
         date_of_birth_display: ocr.date_of_birth_display || ocr.date_of_birth || '',
+        issue_date: ocr.issue_date || '',
+        issue_date_display: ocr.issue_date_display || ocr.issue_date || '',
         father_name_bn: fatherBn,
         father_name_en: banglaToBanglish(fatherBn),
         mother_name_bn: motherBn,
@@ -165,6 +259,8 @@ export default function NomineeStep({
         name_en: toBlockLetters(nameEn),
         date_of_birth: isFirst ? '1998-03-15' : '2001-07-20',
         date_of_birth_display: isFirst ? '15 Mar 1998' : '20 Jul 2001',
+        issue_date: isFirst ? '2020-05-12' : '2021-09-18',
+        issue_date_display: isFirst ? '12 May 2020' : '18 Sep 2021',
         father_name_bn: fatherBn,
         father_name_en: banglaToBanglish(fatherBn),
         mother_name_bn: motherBn,
@@ -212,12 +308,23 @@ export default function NomineeStep({
   };
 
   const handleGenerateClick = () => {
-    // Check that at least 1 nominee has extracted data
-    const extractedNominees = nominees.filter((n) => !!n.data);
-    if (extractedNominees.length === 0) {
-      setGeneralError('Please extract KYC information for at least one nominee before generating the form.');
+    // 1. Verify that all displayed nominees have extracted KYC data
+    const unextractedIndex = nominees.findIndex((n) => !n.data);
+    if (unextractedIndex !== -1) {
+      setGeneralError(
+        `Please upload and extract KYC information for Nominee #${unextractedIndex + 1} before generating the form.`
+      );
       return;
     }
+
+    // 2. Verify that total shares add up to exactly 100%
+    if (totalAllocatedShare !== 100) {
+      setGeneralError(
+        `Nominee share percentages must add up to exactly 100%. Currently total is ${totalAllocatedShare}%.`
+      );
+      return;
+    }
+
     setGeneralError(null);
     onGenerateForm();
   };
@@ -225,27 +332,57 @@ export default function NomineeStep({
   return (
     <Box>
       {/* Title & Introduction */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FamilyRestroomIcon color="primary" fontSize="large" /> Nominee Information (নমিনির তথ্য)
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Upload dual-side NID for nominee(s). You can add multiple nominees if required by the account holder.
-          </Typography>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FamilyRestroomIcon color="primary" fontSize="large" /> Nominee Information (নমিনির তথ্য)
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Nominee #1 defaults to 100% share. If you reduce the share percentage below 100%, additional nominee information forms will appear automatically. All nominee shares must add up to exactly 100%.
+        </Typography>
+      </Box>
+
+      {/* Share Allocation Status Card */}
+      <Card
+        sx={{
+          mb: 3,
+          p: 1.8,
+          bgcolor: totalAllocatedShare === 100 ? '#f0fdf4' : '#fffbeb',
+          border: '1px solid',
+          borderColor: totalAllocatedShare === 100 ? '#86efac' : '#fde68a',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 1.5,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+          {totalAllocatedShare === 100 ? (
+            <CheckCircleOutlineIcon color="success" />
+          ) : (
+            <WarningAmberIcon color="warning" />
+          )}
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: totalAllocatedShare === 100 ? '#15803d' : '#b45309' }}>
+              Nominee Share Distribution: {totalAllocatedShare}% / 100%
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {totalAllocatedShare === 100
+                ? nominees.length === 1
+                  ? 'Nominee #1 is allocated 100% share. You can proceed directly to generate the form.'
+                  : `All ${nominees.length} nominees' shares are balanced and equal 100%.`
+                : `Remaining ${100 - totalAllocatedShare}% must be allocated to balance to 100%.`}
+            </Typography>
+          </Box>
         </Box>
 
-        {/* Add Another Nominee Button */}
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<AddCircleOutlineIcon />}
-          onClick={handleAddNominee}
-          sx={{ fontWeight: 600, borderRadius: 2 }}
-        >
-          Add Another Nominee (+ আরেকজন নমিনি যোগ করুন)
-        </Button>
-      </Box>
+        <Chip
+          label={totalAllocatedShare === 100 ? '100% Balanced' : `${totalAllocatedShare}% Allocated`}
+          color={totalAllocatedShare === 100 ? 'success' : 'warning'}
+          size="small"
+          sx={{ fontWeight: 700 }}
+        />
+      </Card>
 
       {/* General Error Alert */}
       {generalError && (
@@ -284,7 +421,7 @@ export default function NomineeStep({
                     </Box>
 
                     {nominees.length > 1 && (
-                      <Tooltip title="Remove this Nominee">
+                      <Tooltip title="Remove this Nominee and rebalance share">
                         <Button
                           size="small"
                           color="error"
@@ -333,20 +470,23 @@ export default function NomineeStep({
                     <TextField
                       fullWidth
                       size="small"
-                      type="number"
+                      type="text"
                       label="Nominee Share Percentage (নমিনির অংশের হার %)"
-                      value={nominee.share_percentage}
-                      inputProps={{ min: 1, max: 100 }}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10) || 0;
-                        updateNominee(nominee.id, { share_percentage: val });
-                        if (nominee.data) {
-                          updateNominee(nominee.id, {
-                            data: { ...nominee.data, share_percentage: val },
-                          });
-                        }
+                      value={nominee.share_percentage === '' ? '' : nominee.share_percentage}
+                      onChange={(e) => handleShareChange(index, e.target.value)}
+                      onBlur={() => handleShareBlur(index)}
+                      InputProps={{
+                        endAdornment: (
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary', ml: 0.5 }}>
+                            %
+                          </Typography>
+                        ),
                       }}
-                      helperText="Percentage of account balance entitlement"
+                      helperText={
+                        nomineeNumber === 1 && nominees.length === 1
+                          ? 'Default is 100%. If changed to < 100%, another nominee form will automatically appear.'
+                          : 'Auto-balanced so total nominee shares equal exactly 100%.'
+                      }
                     />
                   </Grid>
                 </Grid>

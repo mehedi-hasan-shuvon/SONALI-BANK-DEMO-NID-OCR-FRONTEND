@@ -37,6 +37,7 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BloodtypeOutlinedIcon from '@mui/icons-material/BloodtypeOutlined';
 import TranslateIcon from '@mui/icons-material/Translate';
+import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 
 export default function HolderDataTable({
   title = 'Extracted KYC Information',
@@ -99,6 +100,14 @@ export default function HolderDataTable({
       labelBn: 'জন্ম তারিখ',
       value: data.date_of_birth_display || data.date_of_birth,
       icon: <CakeOutlinedIcon color="primary" />,
+      highlight: true,
+    },
+    {
+      id: 'issue_date',
+      labelEn: 'Card Issue Date',
+      labelBn: 'প্রদানের তারিখ',
+      value: data.issue_date_display || data.issue_date,
+      icon: <EventAvailableOutlinedIcon color="primary" />,
       highlight: true,
     },
     {
@@ -364,6 +373,16 @@ export default function HolderDataTable({
                 label="Birth Date (জন্ম তারিখ)"
                 value={editFormData.date_of_birth_display || editFormData.date_of_birth || ''}
                 onChange={(e) => setEditFormData({ ...editFormData, date_of_birth: e.target.value, date_of_birth_display: e.target.value })}
+                variant="outlined"
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Card Issue Date (প্রদানের তারিখ)"
+                value={editFormData.issue_date_display || editFormData.issue_date || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, issue_date: e.target.value, issue_date_display: e.target.value })}
                 variant="outlined"
                 size="small"
               />

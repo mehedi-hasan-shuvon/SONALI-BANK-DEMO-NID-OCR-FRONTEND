@@ -14,13 +14,11 @@ import {
 import PersonIcon from '@mui/icons-material/Person';
 import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 import PrimaryHolderStep from './PrimaryHolderStep';
 import NomineeStep from './NomineeStep';
 import AccountFormPreview from './AccountFormPreview';
-import { banglaToBanglish, toBlockLetters } from '../../utils/transliterate';
 
 const STEPS = [
   { label: 'Primary Account Holder', icon: <PersonIcon /> },
@@ -70,7 +68,7 @@ export default function DemoAccountCreation() {
       application_id: `SB-AOF-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`,
       generated_at: new Date().toISOString(),
       bank: 'Sonali Bank PLC',
-      branch: 'Principal Branch, Motijheel, Dhaka',
+      branch: 'Munshiganj Branch, Munshiganj',
       account_type: 'Savings Bank Deposit Account (SB)',
       currency: 'BDT (Bangladeshi Taka)',
       primary_holder: {
@@ -78,6 +76,7 @@ export default function DemoAccountCreation() {
         name_bn: primaryHolderData.name_bn || 'N/A',
         name_en_block: primaryHolderData.name_en || 'N/A',
         date_of_birth: primaryHolderData.date_of_birth_display || primaryHolderData.date_of_birth || 'N/A',
+        issue_date: primaryHolderData.issue_date_display || primaryHolderData.issue_date || 'N/A',
         father_name_bn: primaryHolderData.father_name_bn || 'N/A',
         father_name_en: primaryHolderData.father_name_en || 'N/A',
         mother_name_bn: primaryHolderData.mother_name_bn || 'N/A',
@@ -94,6 +93,7 @@ export default function DemoAccountCreation() {
         name_bn: nom.data.name_bn || 'N/A',
         name_en_block: nom.data.name_en || 'N/A',
         date_of_birth: nom.data.date_of_birth_display || nom.data.date_of_birth || 'N/A',
+        issue_date: nom.data.issue_date_display || nom.data.issue_date || 'N/A',
         father_name_bn: nom.data.father_name_bn || 'N/A',
         father_name_en: nom.data.father_name_en || 'N/A',
         mother_name_bn: nom.data.mother_name_bn || 'N/A',
@@ -140,57 +140,6 @@ export default function DemoAccountCreation() {
     setActiveStep(0);
   };
 
-  // Load Complete Pre-filled Demo Account (Both Primary + Nominee)
-  const handleLoadFullDemo = () => {
-    const primary = {
-      nid_number: '5506821345',
-      nid_type: 'SMART',
-      name_bn: 'মেহেদী হাসান',
-      name_en: 'MEHEDI HASAN',
-      date_of_birth: '1995-10-24',
-      date_of_birth_display: '24 Oct 1995',
-      father_name_bn: 'মোঃ রফিকুল ইসলাম',
-      father_name_en: banglaToBanglish('মোঃ রফিকুল ইসলাম'),
-      mother_name_bn: 'রাবেয়া খাতুন',
-      mother_name_en: banglaToBanglish('রাবেয়া খাতুন'),
-      gender: 'Male',
-      blood_group: 'B+',
-      place_of_birth: 'Dhaka',
-      address: 'বাসা/হোল্ডিং: ১২/এ, গ্রাম/রাস্তা: ধানমন্ডি ২৭, ডাকঘর: মোহাম্মদপুর - ১২০৭, থানা: ধানমন্ডি, জেলা: ঢাকা',
-    };
-
-    const nominee1 = {
-      nid_number: '7806829871',
-      nid_type: 'SMART',
-      name_bn: 'নুসরাত জাহান',
-      name_en: 'NUSRAT JAHAN',
-      date_of_birth: '1998-03-15',
-      date_of_birth_display: '15 Mar 1998',
-      father_name_bn: 'আব্দুল করিম',
-      father_name_en: banglaToBanglish('আব্দুল করিম'),
-      mother_name_bn: 'ফাতেমা বেগম',
-      mother_name_en: banglaToBanglish('ফাতেমা বেগম'),
-      gender: 'Female',
-      address: 'বাসা/হোল্ডিং: ৮/বি, গ্রাম/রাস্তা: মিরপুর রোড, ডাকঘর: মিরপুর - ১২১৬, থানা: মিরপুর, জেলা: ঢাকা',
-      relationship: 'Spouse (স্ত্রী/স্বামী)',
-      share_percentage: 100,
-    };
-
-    setPrimaryHolderData(primary);
-    setNominees([
-      {
-        id: 1,
-        relationship: 'Spouse (স্ত্রী/স্বামী)',
-        share_percentage: 100,
-        frontFile: null,
-        backFile: null,
-        data: nominee1,
-        loading: false,
-        error: null,
-      },
-    ]);
-  };
-
   return (
     <Box sx={{ mt: 1, mb: 6 }}>
       {/* Quick Action Top Bar */}
@@ -199,16 +148,6 @@ export default function DemoAccountCreation() {
           Step-by-step Intelligent KYC Account Opening with Dual-Side OCR & Banglish transliteration:
         </Typography>
         <Stack direction="row" spacing={1}>
-          <Button
-            size="small"
-            variant="outlined"
-            color="primary"
-            startIcon={<PlayCircleOutlineIcon />}
-            onClick={handleLoadFullDemo}
-            sx={{ textTransform: 'none', fontWeight: 600 }}
-          >
-            Load Full Demo Account (Primary + Nominee)
-          </Button>
           {(primaryHolderData || generatedForm) && (
             <Button
               size="small"

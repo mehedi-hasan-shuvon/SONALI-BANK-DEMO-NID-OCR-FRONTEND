@@ -201,10 +201,10 @@ export default function AccountFormPreview({
                     {primary_holder.nid_number || 'N/A'}
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700, bgcolor: '#f8fafc' }}>
-                    Date of Birth:
+                    Date of Birth / Issue Date:
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>
-                    {primary_holder.date_of_birth || 'N/A'}
+                    {primary_holder.date_of_birth || 'N/A'} {primary_holder.issue_date ? `(Issued: ${primary_holder.issue_date})` : ''}
                   </TableCell>
                 </TableRow>
 
@@ -315,10 +315,10 @@ export default function AccountFormPreview({
                           {nom.nid_number || 'N/A'}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700, bgcolor: '#f8fafc' }}>
-                          Date of Birth:
+                          Date of Birth / Issue Date:
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>
-                          {nom.date_of_birth || 'N/A'}
+                          {nom.date_of_birth || 'N/A'} {nom.issue_date ? `(Issued: ${nom.issue_date})` : ''}
                         </TableCell>
                       </TableRow>
 

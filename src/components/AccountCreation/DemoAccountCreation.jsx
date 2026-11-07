@@ -142,8 +142,8 @@ export default function DemoAccountCreation() {
 
   return (
     <Box sx={{ mt: 1, mb: 6 }}>
-      {/* Quick Action Top Bar */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+      {/* Quick Action Top Bar - Hidden in Print */}
+      <Box className="no-print" sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
         <Typography variant="body2" color="text.secondary">
           Step-by-step Intelligent KYC Account Opening with Dual-Side OCR & Banglish transliteration:
         </Typography>
@@ -162,8 +162,8 @@ export default function DemoAccountCreation() {
         </Stack>
       </Box>
 
-      {/* Stepper Header */}
-      <Card sx={{ mb: 4, borderRadius: 2, border: '1px solid #e2e8f0' }}>
+      {/* Stepper Header - Hidden in Print */}
+      <Card className="no-print" sx={{ mb: 4, borderRadius: 2, border: '1px solid #e2e8f0' }}>
         <CardContent sx={{ py: 2.5, px: { xs: 2, md: 4 } }}>
           <Stepper activeStep={activeStep} alternativeLabel>
             {STEPS.map((step, index) => (

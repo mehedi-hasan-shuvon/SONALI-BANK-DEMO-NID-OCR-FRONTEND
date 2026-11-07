@@ -156,13 +156,13 @@ export default function DualSideUploadBox({
               cursor: 'pointer',
               border: '2px dashed',
               borderColor: frontFile ? 'primary.main' : '#cbd5e1',
-              bgcolor: frontFile ? 'rgba(0, 106, 78, 0.03)' : '#f8fafc',
+              bgcolor: frontFile ? 'rgba(184, 134, 11, 0.04)' : '#f8fafc',
               borderRadius: 2,
               position: 'relative',
               transition: 'all 0.2s ease',
               '&:hover': {
                 borderColor: 'primary.main',
-                bgcolor: 'rgba(0, 106, 78, 0.05)',
+                bgcolor: 'rgba(184, 134, 11, 0.07)',
               },
             }}
           >

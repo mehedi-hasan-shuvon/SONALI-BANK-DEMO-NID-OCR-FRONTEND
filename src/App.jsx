@@ -207,6 +207,7 @@ export default function App() {
         {/* Main Application Mode Navigation */}
         <Paper
           elevation={0}
+          className="no-print"
           sx={{
             mb: 3,
             border: '1px solid #e2e8f0',

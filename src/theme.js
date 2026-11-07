@@ -3,15 +3,15 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#006a4e', // Sonali Emerald Green
-      light: '#2e9372',
-      dark: '#004733',
+      main: '#b8860b', // Sonali Gold (সোনালী গোল্ড)
+      light: '#d4af37', // Bright Metallic Gold
+      dark: '#8c6508', // Deep Antique Gold
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#b45309', // Sonali Amber / Gold
-      light: '#f59e0b',
-      dark: '#78350f',
+      main: '#92400e', // Deep Warm Amber / Golden Brown
+      light: '#b45309',
+      dark: '#712b07',
       contrastText: '#ffffff',
     },
     success: {
@@ -30,12 +30,12 @@ const theme = createTheme({
       dark: '#c2410c',
     },
     background: {
-      default: '#f8fafc',
+      default: '#faf8f5', // Subtle warm golden tint background
       paper: '#ffffff',
     },
     text: {
-      primary: '#0f172a',
-      secondary: '#475569',
+      primary: '#1e293b',
+      secondary: '#64748b',
     },
   },
   typography: {
@@ -71,7 +71,7 @@ const theme = createTheme({
           borderRadius: 8,
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 2px 8px rgba(0, 106, 78, 0.25)',
+            boxShadow: '0 2px 8px rgba(184, 134, 11, 0.35)',
           },
         },
       },
@@ -80,7 +80,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
           border: '1px solid #e2e8f0',
         },
       },
@@ -88,9 +88,9 @@ const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         head: {
-          backgroundColor: '#f1f5f9',
+          backgroundColor: '#fbf8f2',
           fontWeight: 600,
-          color: '#334155',
+          color: '#475569',
           fontSize: '0.8125rem',
         },
       },
